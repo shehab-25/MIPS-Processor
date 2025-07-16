@@ -35,10 +35,83 @@ This is a Verilog implementation of a **Single Cycle MIPS Processor** that execu
 - I-type: `lw`, `sw`, `beq`, `addi`
 - J-type: `j`
 
-### 🧪 Testing
+### Testing
 - All instructions are verified using a testbench (`MIPS_tb.v`)
 - Memory and register values are observed to confirm correct execution.
 
 
 ## Pipelined MIPS Processor
-- it will be added soon  
+
+### Overview
+This is a Verilog implementation of a **5-stage pipelined MIPS Processor**. It splits instruction execution into multiple pipeline stages to improve instruction throughput:
+1. **IF** – Instruction Fetch
+2. **ID** – Instruction Decode
+3. **EX** – Execute
+4. **MEM** – Memory Access
+5. **WB** – Write Back
+
+### Pipelined Processor Features
+- Instruction-level parallelism using pipeline registers between stages
+- Data hazard handling via forwarding unit and hazard detection
+- Control hazard handling using branch decision in ID/EX stage
+
+### Features
+
+- **Five Pipeline Stages**:
+  - **IF** – Instruction Fetch  
+  - **ID** – Instruction Decode & Register Read  
+  - **EX** – ALU Execution  
+  - **MEM** – Data Memory Access  
+  - **WB** – Write Back to Register File
+
+- **Supported Instructions**:
+  - Arithmetic: `add`, `sub`, `addi`
+  - Logical: `or`, `and`
+  - Comparison: `slt`
+  - Memory: `lw`, `sw`
+  - Control Flow: `beq`, `j`
+
+- **Hazard Management**:
+  - **Data hazards** handled via a forwarding unit
+  - **Load-use hazards** detected and resolved with stalling
+  - **Control hazards** handled with branch and jump flushing
+
+- **Jump Instruction (`j`)**:
+  - Fully supported with proper flushing of Decode and Execute stages to avoid incorrect execution
+
+### Modules Included
+| Module                  | Description |
+|-------------------------|-------------|
+| `MIPS.v`                | Top-level design integrating all stages |
+| `MIPS_tb.v`             | Comprehensive testbench to simulate the processor |
+| `fetch_decode.v`        | IF/ID pipeline register |
+| `decode_execute.v`      | ID/EX pipeline register |
+| `Execute_Mem.v`         | EX/MEM pipeline register |
+| `Mem_WB.v`              | MEM/WB pipeline register |
+| `control_unit.v`        | Generates control signals based on opcode |
+| `hazard_unit.v`         | Detects and handles data/control hazards |
+| `forwarding_unit.v`     | Handles forwarding logic to prevent stalls |
+| `instruction_memory.v`  | ROM for instruction fetch |
+| `data_memory.v`         | RAM for data read/write |
+| `register_file.v`       | 32x32-bit register file with 2-read 1-write ports |
+| `ALU.v`, `adder.v`      | Arithmetic and logic units |
+| `mux.v`, `mux3_1.v`     | Multiplexers used in pipeline control |
+| `PC.v`                  | Program Counter logic |
+| `shift_left_2.v`, `shift_left_jump.v` | Logic for jump/branch addressing |
+| `sign_extend.v`         | 16-to-32-bit immediate extender |
+| `assembly_instructions.asm` | Assembly source program |
+| `instructions.dat`      | Machine code version of `assembly_instructions.asm` |
+| `run_mips.do`           | ModelSim simulation script |
+| `Constraints_basys3.xdc`| FPGA pin constraints for Basys 3 |
+
+### Simulation
+
+1. Open ModelSim
+2. Run the provided script:
+   ```tcl
+   do run_mips.do
+---
+
+### Notes
+- The single-cycle version is simpler and good for understanding basic datapath.
+- The pipelined version is optimized for performance and closer to real CPU behavior.
